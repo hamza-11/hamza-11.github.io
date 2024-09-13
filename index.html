@@ -37,8 +37,7 @@
 <body>
     <h1>معالجة الصور بالذكاء الاصطناعي</h1>
     <video id="camera" autoplay playsinline></video>
-    <div id="status"></div>
-    <div id="output"></div>
+    <div id="status"></div>   
     <div id="answer"></div>
     <audio id="alarm" src="1.wav" preload="auto"></audio>
 
@@ -156,7 +155,7 @@
         function speakText(text) {
             if ('speechSynthesis' in window) {
                 const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'ar-SA'; // تعيين اللغة إلى العربية
+               utterance.lang = 'fr-FR';// تعيين اللغة إلى العربية
                 window.speechSynthesis.speak(utterance);
             } else {
                 console.error('خاصية تحويل النص إلى كلام غير مدعومة');
