@@ -52,6 +52,7 @@
 
         let lastCapturedBlob = null;
         let isProcessing = false;
+        let startDetected = false;
 
         // دالة لتحديث حالة المعالجة
         function updateStatus(message, isError = false) {
@@ -91,14 +92,13 @@
 
                 if (endpoint.includes("process_image")) {
                     outputDiv.textContent = data.text;
-                    if (data.text.toLowerCase().includes("start")) {
+                    if (data.text.toLowerCase().includes("start") && !startDetected) {
+                        startDetected = true;
                         alarm.play();
+                        updateStatus('تم اكتشاف كلمة "start". سيتم التقاط صورة بعد 5 ثوانٍ.');
                         setTimeout(() => {
-                            if (lastCapturedBlob) {
-                                const contentFormData = createContentFormData(lastCapturedBlob);
-                                captureAndSendImage('https://doctora-4.onrender.com/generate-content/', contentFormData);
-                            }
-                        }, 10000);
+                            captureAndProcessExercises();
+                        }, 5000);
                     }
                 } else {
                     answerDiv.textContent = data.text;
@@ -131,7 +131,7 @@
 
         // دالة لالتقاط الصورة ومعالجتها
         function captureAndProcessImage() {
-            if (isProcessing) return;
+            if (isProcessing || startDetected) return;
 
             const canvas = document.createElement('canvas');
             canvas.width = video.videoWidth;
@@ -143,6 +143,21 @@
                 lastCapturedBlob = blob;
                 const formData = createFormData(blob);
                 captureAndSendImage('https://doctora-5.onrender.com/process_image/', formData);
+            }, 'image/jpeg');
+        }
+
+        // دالة جديدة لالتقاط ومعالجة التمارين
+        function captureAndProcessExercises() {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            canvas.toBlob(blob => {
+                const formData = createContentFormData(blob);
+                captureAndSendImage('https://doctora-4.onrender.com/generate-content/', formData);
+                startDetected = false; // إعادة تعيين الحالة بعد معالجة التمارين
             }, 'image/jpeg');
         }
 
