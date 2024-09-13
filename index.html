@@ -43,7 +43,6 @@
     <audio id="alarm" src="1.wav" preload="auto"></audio>
 
     <script>
-        // تعريف المتغيرات الرئيسية
         const video = document.getElementById('camera');
         const outputDiv = document.getElementById('output');
         const answerDiv = document.getElementById('answer');
@@ -54,13 +53,11 @@
         let isProcessing = false;
         let startDetected = false;
 
-        // دالة لتحديث حالة المعالجة
         function updateStatus(message, isError = false) {
             statusDiv.textContent = message;
             statusDiv.className = isError ? 'error' : '';
         }
 
-        // طلب الوصول إلى الكاميرا
         async function setupCamera() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
@@ -72,7 +69,6 @@
             }
         }
 
-        // دالة لالتقاط الصورة وإرسالها
         async function captureAndSendImage(endpoint, formData) {
             if (isProcessing) return;
             isProcessing = true;
@@ -91,7 +87,6 @@
                 const data = await response.json();
 
                 if (endpoint.includes("process_image")) {
-                    outputDiv.textContent = data.text;
                     if (data.text.toLowerCase().includes("start") && !startDetected) {
                         startDetected = true;
                         alarm.play();
@@ -101,6 +96,7 @@
                         }, 5000);
                     }
                 } else {
+                    // فقط اكتب الاستجابة من captureAndProcessExercises
                     answerDiv.textContent = data.text;
                     speakText(data.text);
                 }
@@ -114,14 +110,12 @@
             }
         }
 
-        // دالة لإنشاء FormData للصورة
         function createFormData(blob) {
             const formData = new FormData();
             formData.append('file', blob, 'capture.jpg');
             return formData;
         }
 
-        // دالة لإنشاء FormData للمحتوى
         function createContentFormData(blob) {
             const formData = new FormData();
             formData.append('image', blob, 'capture.jpg');
@@ -129,7 +123,6 @@
             return formData;
         }
 
-        // دالة لالتقاط الصورة ومعالجتها
         function captureAndProcessImage() {
             if (isProcessing || startDetected) return;
 
@@ -146,7 +139,6 @@
             }, 'image/jpeg');
         }
 
-        // دالة جديدة لالتقاط ومعالجة التمارين
         function captureAndProcessExercises() {
             const canvas = document.createElement('canvas');
             canvas.width = video.videoWidth;
@@ -161,7 +153,6 @@
             }, 'image/jpeg');
         }
 
-        // دالة لنطق النص
         function speakText(text) {
             if ('speechSynthesis' in window) {
                 const utterance = new SpeechSynthesisUtterance(text);
@@ -173,10 +164,8 @@
             }
         }
 
-        // بدء تشغيل الكاميرا عند تحميل الصفحة
         window.addEventListener('load', setupCamera);
 
-        // التقاط وإرسال الصورة كل 5 ثوانٍ
         setInterval(captureAndProcessImage, 20000);
     </script>
 </body>
