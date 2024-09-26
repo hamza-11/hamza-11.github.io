@@ -1,171 +1,32 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>معالجة الصور بالذكاء الاصطناعي</title>
+    <title>صفحة الروابط</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
             text-align: center;
+            margin-top: 50px;
         }
-        #camera {
-            width: 100%;
-            max-width: 640px;
-            margin: 0 auto;
-        }
-        #output, #answer {
-            margin-top: 20px;
-            font-size: 18px;
-            white-space: pre-wrap;
-            text-align: right;
-        }
-        #answer {
+        a {
+            font-size: 24px;
             color: blue;
+            text-decoration: none;
         }
-        #status {
-            margin-top: 10px;
-            font-weight: bold;
-        }
-        .error {
-            color: red;
+        a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
-    <h1>معالجة الصور بالذكاء الاصطناعي</h1>
-    <video id="camera" autoplay playsinline></video>
-    <div id="status"></div>   
-    <div id="answer"></div>
-    <audio id="alarm" src="1.wav" preload="auto"></audio>
-
-    <script>
-        const video = document.getElementById('camera');
-        const outputDiv = document.getElementById('output');
-        const answerDiv = document.getElementById('answer');
-        const statusDiv = document.getElementById('status');
-        const alarm = document.getElementById('alarm');
-
-        let lastCapturedBlob = null;
-        let isProcessing = false;
-        let startDetected = false;
-
-        function updateStatus(message, isError = false) {
-            statusDiv.textContent = message;
-            statusDiv.className = isError ? 'error' : '';
-        }
-
-        async function setupCamera() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-                video.srcObject = stream;
-                updateStatus('تم تشغيل الكاميرا بنجاح');
-            } catch (error) {
-                console.error('خطأ في الوصول إلى الكاميرا:', error);
-                updateStatus('فشل في الوصول إلى الكاميرا. يرجى التحقق من الإذن وإعدادات الكاميرا.', true);
-            }
-        }
-
-        async function captureAndSendImage(endpoint, formData) {
-            if (isProcessing) return;
-            isProcessing = true;
-            updateStatus('جاري معالجة الصورة...');
-
-            try {
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    throw new Error(`خطأ في الاستجابة: ${response.status}`);
-                }
-
-                const data = await response.json();
-
-                if (endpoint.includes("process_image")) {
-                    if (data.text.toLowerCase().includes("start") && !startDetected) {
-                        startDetected = true;
-                        alarm.play();
-                        updateStatus('تم اكتشاف كلمة "start". سيتم التقاط صورة بعد 5 ثوانٍ.');
-                        setTimeout(() => {
-                            captureAndProcessExercises();
-                        }, 5000);
-                    }
-                } else {
-                    // فقط اكتب الاستجابة من captureAndProcessExercises
-                    answerDiv.textContent = data.text;
-                    speakText(data.text);
-                }
-
-                updateStatus('تمت المعالجة بنجاح');
-            } catch (error) {
-                console.error('خطأ في إرسال الصورة:', error);
-                updateStatus('حدث خطأ أثناء معالجة الصورة. يرجى المحاولة مرة أخرى.', true);
-            } finally {
-                isProcessing = false;
-            }
-        }
-
-        function createFormData(blob) {
-            const formData = new FormData();
-            formData.append('file', blob, 'capture.jpg');
-            return formData;
-        }
-
-        function createContentFormData(blob) {
-            const formData = new FormData();
-            formData.append('image', blob, 'capture.jpg');
-            formData.append('prompt', 'يرجى حل جميع التمارين الظاهرة في ورقة الامتحان بالتفصيل. قدم الحلول أولاً باللغة الفرنسية، ثم باللغة العربية.');
-            return formData;
-        }
-
-        function captureAndProcessImage() {
-            if (isProcessing || startDetected) return;
-
-            const canvas = document.createElement('canvas');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const context = canvas.getContext('2d');
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-            
-            canvas.toBlob(blob => {
-                lastCapturedBlob = blob;
-                const formData = createFormData(blob);
-                captureAndSendImage('https://doctora-5.onrender.com/process_image/', formData);
-            }, 'image/jpeg');
-        }
-
-        function captureAndProcessExercises() {
-            const canvas = document.createElement('canvas');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const context = canvas.getContext('2d');
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-            
-            canvas.toBlob(blob => {
-                const formData = createContentFormData(blob);
-                captureAndSendImage('https://doctora-4.onrender.com/generate-content/', formData);
-                startDetected = false; // إعادة تعيين الحالة بعد معالجة التمارين
-            }, 'image/jpeg');
-        }
-
-        function speakText(text) {
-            if ('speechSynthesis' in window) {
-                const utterance = new SpeechSynthesisUtterance(text);
-               utterance.lang = 'fr-FR';// تعيين اللغة إلى العربية
-                window.speechSynthesis.speak(utterance);
-            } else {
-                console.error('خاصية تحويل النص إلى كلام غير مدعومة');
-                updateStatus('خاصية تحويل النص إلى كلام غير مدعومة في هذا المتصفح', true);
-            }
-        }
-
-        window.addEventListener('load', setupCamera);
-
-        setInterval(captureAndProcessImage, 20000);
-    </script>
+    <h1>اختر أحد الروابط</h1>
+    <p>
+        <a href="EPH/index.html">EPH</a>
+    </p>
+    <p>
+        <a href="DSP/index.html">DSP</a>
+    </p>
 </body>
 </html>
