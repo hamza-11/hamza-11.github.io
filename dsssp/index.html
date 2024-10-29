@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام المراقبة الذكي</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f2f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .video-container {
+            margin: 20px auto;
+            position: relative;
+            max-width: 800px;
+        }
+        #videoFeed {
+            width: 100%;
+            border: 3px solid #2c3e50;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .alert {
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background-color: #e74c3c;
+            color: white;
+            border-radius: 5px;
+            animation: fadeIn 0.5s;
+            z-index: 1000;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            background: #ecf0f1;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .detection-list {
+            margin: 20px auto;
+            max-width: 600px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>نظام المراقبة الذكي</h1>
+        
+        <div class="video-container">
+            <video id="videoFeed" controls autoplay>
+                <source src="https://your-app-name.onrender.com/video_feed" type="video/mp4"> <!-- استبدل بـ رابط API -->
+                متصفحك لا يدعم الفيديو.
+            </video>
+        </div>
+
+        <div class="controls">
+            <button onclick="startCamera()">تشغيل الكاميرا</button>
+            <button onclick="stopCamera()">إيقاف الكاميرا</button>
+            <button onclick="toggleAlarm()">تشغيل/إيقاف الإنذار</button>
+        </div>
+
+        <div class="status" id="status">
+            حالة النظام: جاهز
+        </div>
+
+        <div class="detection-list" id="detectionList">
+            <h3>الكائنات المكتشفة:</h3>
+            <div id="detections"></div>
+        </div>
+    </div>
+
+    <div class="alert" id="alert">
+        تم اكتشاف حركة!
+    </div>
+
+    <audio id="alarmSound" src="https://www.soundjay.com/misc/sounds/warning-siren-1.mp3" preload="auto"></audio>
+
+    <script>
+        let isAlarmEnabled = true;
+        let cameraActive = false;
+        const alarmSound = document.getElementById('alarmSound');
+        const videoFeed = document.getElementById('videoFeed');
+        const status = document.getElementById('status');
+        const alert = document.getElementById('alert');
+        const detectionsDiv = document.getElementById('detections');
+
+        function startCamera() {
+            cameraActive = true;
+            videoFeed.src = 'https://your-app-name.onrender.com/video_feed';  // رابط API
+            status.textContent = 'حالة النظام: نشط';
+            startDetectionCheck();
+        }
+
+        function stopCamera() {
+            cameraActive = false;
+            videoFeed.src = '';
+            status.textContent = 'حالة النظام: متوقف';
+            alarmSound.pause();
+            alert.style.display = 'none';
+        }
+
+        function toggleAlarm() {
+            isAlarmEnabled = !isAlarmEnabled;
+            if (!isAlarmEnabled) {
+                alarmSound.pause();
+                alert.style.display = 'none';
+            }
+        }
+
+        function startDetectionCheck() {
+            setInterval(async () => {
+                if (!cameraActive) return;
+                
+                try {
+                    const response = await fetch('https://detection-17.onrender.com/get_detections');  // رابط API
+                    const detections = await response.json();
+                    
+                    detectionsDiv.innerHTML = detections.map(obj => 
+                        `<p>${obj.type} (الثقة: ${(obj.confidence * 100).toFixed(1)}%)</p>`
+                    ).join('');
+
+                    if (detections.length > 0 && isAlarmEnabled) {
+                        alert.style.display = 'block';
+                        alarmSound.play();
+                    } else {
+                        alert.style.display = 'none';
+                        alarmSound.pause();
+                    }
+                } catch (error) {
+                    console.error('خطأ في جلب البيانات:', error);
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
