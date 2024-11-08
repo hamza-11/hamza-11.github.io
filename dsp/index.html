@@ -4,113 +4,88 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Almarai&display=swap">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ToDo List</title>
+    <title>To-Do List</title>
     <style>
         body {
             font-family: 'Almarai', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f3f4f6;
-            color: #333;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .container {
-            width: 90%;
-            max-width: 600px;
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            background-color: #121212;
+            color: #ffffff;
             text-align: center;
         }
-        h1 {
-            color: #4CAF50;
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
         }
-        #password {
-            width: 100%;
+        .login-page, .todo-page {
+            width: 80%;
+            margin: 0 auto;
+        }
+        .login-page {
+            display: block;
+        }
+        .todo-page {
+            display: none;
+        }
+        #todoList {
+            list-style: none;
+            padding: 0;
+        }
+        .todo-item {
+            background-color: #333;
             padding: 10px;
-            margin: 10px 0;
-            font-size: 16px;
             border-radius: 5px;
-            border: 1px solid #ccc;
-        }
-        #sButton, #sendButton, #deleteButton, #uploadImageButton, #sendImageButton {
-            width: 100%;
-            padding: 10px;
             margin: 5px 0;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-        #sButton, #sendButton {
-            background-color: #4CAF50;
-            color: white;
-        }
-        #sButton:hover, #sendButton:hover {
-            background-color: #45a049;
-        }
-        #deleteButton, #uploadImageButton, #sendImageButton {
-            background-color: #f44336;
-            color: white;
-        }
-        #deleteButton:hover, #uploadImageButton:hover, #sendImageButton:hover {
-            background-color: #d32f2f;
-        }
-        #chat {
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 10px;
-            max-height: 300px;
-            overflow-y: scroll;
-            background-color: #fafafa;
-            margin: 10px 0;
-        }
-        .message {
-            background-color: #e8f5e9;
-            padding: 10px;
-            margin: 5px 0;
-            border-radius: 5px;
-            text-align: left;
             display: flex;
             justify-content: space-between;
+            align-items: center;
         }
-        .message p {
-            margin: 0;
-            font-size: 14px;
+        .todo-item button {
+            background-color: #8B0000;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
         }
-        .message span {
-            font-size: 12px;
-            color: #777;
+        #taskInput {
+            padding: 8px;
+            border-radius: 5px;
+            background-color: #333;
+            color: #ffffff;
+            margin-top: 10px;
+            width: 80%;
+        }
+        #addTaskButton {
+            padding: 8px;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
         }
     </style>
 </head>
 <body dir="rtl">
     <div class="container">
         <div class="login-page">
-            <h1>ToDo List</h1>
+            <h1>قائمة المهام</h1>
             <form id="loginForm">
                 <label for="password">كلمة المرور:</label>
-                <input type="password" id="password" name="password" placeholder="أدخل كلمة المرور">
-                <button id="sButton" type="submit">تسجيل الدخول</button>
+                <input type="password" id="password" style="background-color: #333; color: #ffffff;">
+                <button type="submit">تسجيل الدخول</button>
             </form>
         </div>
 
-        <div class="chat-page" style="display: none;">
-            <h1>إدارة المهام</h1>
-            <div id="chat"></div>
-            <input type="file" id="imageInput" accept="image/*" style="display: none;">
-            <button id="uploadImageButton" onclick="document.getElementById('imageInput').click();">رفع صورة</button>
-            <button id="sendImageButton" onclick="sendImage()">إرسال صورة</button>
-            <input type="text" id="messageInput" placeholder="اكتب المهمة" style="width: calc(100% - 90px); padding: 8px; margin: 5px 0;">
-            <button id="sendButton" onclick="sendMessage()">إضافة مهمة</button>
-            <button id="deleteButton" onclick="deleteAllMessages()">حذف جميع المهام</button>
+        <div class="todo-page">
+            <h1>مهامي اليومية</h1>
+            <ul id="todoList"></ul>
+            <input type="text" id="taskInput" placeholder="أدخل مهمة جديدة">
+            <button id="addTaskButton" onclick="addTask()">إضافة</button>
         </div>
     </div>
+
     <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-database.js"></script>
     <script>
@@ -132,7 +107,7 @@
         document.getElementById("loginForm").addEventListener("submit", function(event) {
             event.preventDefault();
             const password = document.getElementById("password").value;
-            if (password === "22071980") {
+            if (password === "2207") {
                 document.querySelector(".login-page").style.display = "none";
                 document.querySelector(".todo-page").style.display = "block";
                 loadTasks();
