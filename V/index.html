@@ -12,23 +12,46 @@
             top: 0;
             left: 0;
         }
+        #cameraSelector {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 10;
+        }
     </style>
 </head>
 <body>
+    <select id="cameraSelector"></select>
     <video id="video" width="640" height="480" autoplay muted></video>
     <canvas id="canvas" width="640" height="480"></canvas>
 
     <script>
-        async function setupCamera() {
+        async function getCameras() {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            return devices.filter(device => device.kind === 'videoinput');
+        }
+
+        async function setupCamera(deviceId) {
             const video = document.getElementById('video');
             const stream = await navigator.mediaDevices.getUserMedia({
-                video: { width: 640, height: 480 }
+                video: { deviceId: deviceId ? { exact: deviceId } : undefined, width: 640, height: 480 }
             });
             video.srcObject = stream;
             return new Promise(resolve => {
                 video.onloadedmetadata = () => {
                     resolve(video);
                 };
+            });
+        }
+
+        async function populateCameraSelector() {
+            const cameras = await getCameras();
+            const selector = document.getElementById('cameraSelector');
+            cameras.forEach((camera, index) => {
+                const option = document.createElement('option');
+                option.value = camera.deviceId;
+                option.text = camera.label || `Camera ${index + 1}`;
+                selector.appendChild(option);
             });
         }
 
@@ -74,11 +97,19 @@
         }
 
         async function main() {
-            // تحميل نموذج COCO-SSD
+            await populateCameraSelector();
             const model = await cocoSsd.load();
             console.log("Model loaded");
-            const video = await setupCamera();
+
+            const selector = document.getElementById('cameraSelector');
+            let video = await setupCamera(selector.value);
             detectObjects(video, model);
+
+            selector.addEventListener('change', async () => {
+                video.srcObject.getTracks().forEach(track => track.stop());
+                video = await setupCamera(selector.value);
+                detectObjects(video, model);
+            });
         }
 
         main();
