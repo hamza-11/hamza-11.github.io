@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motion Detection</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+    <style>
+        canvas, video {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+    <video id="video" width="640" height="480" autoplay muted></video>
+    <canvas id="canvas" width="640" height="480"></canvas>
+
+    <script>
+        async function setupCamera() {
+            const video = document.getElementById('video');
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { width: 640, height: 480 }
+            });
+            video.srcObject = stream;
+            return new Promise(resolve => {
+                video.onloadedmetadata = () => {
+                    resolve(video);
+                };
+            });
+        }
+
+        async function detectObjects(video, model) {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            const audio = new Audio('alert.mp3'); // ضع مسار الصوت هنا
+
+            async function detect() {
+                const predictions = await model.detect(video);
+
+                // عرض الكائنات المكتشفة في وحدة التحكم
+                console.log(predictions);
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                let objectDetected = false;
+
+                predictions.forEach(prediction => {
+                    if (["person", "car", "motorbike", "bicycle"].includes(prediction.class)) {
+                        objectDetected = true; // تم اكتشاف جسم
+
+                        const [x, y, width, height] = prediction.bbox;
+                        ctx.strokeStyle = "red";
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(x, y, width, height);
+                        ctx.font = "18px Arial";
+                        ctx.fillStyle = "red";
+                        ctx.fillText(prediction.class, x, y > 10 ? y - 5 : 10);
+                    }
+                });
+
+                // تشغيل الصوت عند اكتشاف جسم
+                if (objectDetected) {
+                    audio.play();
+                }
+
+                requestAnimationFrame(detect);
+            }
+
+            detect();
+        }
+
+        async function main() {
+            // تحميل نموذج COCO-SSD
+            const model = await cocoSsd.load();
+            console.log("Model loaded");
+            const video = await setupCamera();
+            detectObjects(video, model);
+        }
+
+        main();
+    </script>
+</body>
+</html>
