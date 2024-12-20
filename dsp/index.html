@@ -69,5 +69,100 @@
 </head>
 <body dir="rtl">
 
+
+    <div class="container">
+        <div class="login-page">
+            <h1>قائمة المهام</h1>
+            <form id="loginForm">
+                <label for="password">كلمة المرور:</label>
+                <input type="password" id="password" style="background-color: #333; color: #ffffff;">
+                <button type="submit">تسجيل الدخول</button>
+            </form>
+        </div>
+
+        <div class="todo-page">
+            <h1>مهامي اليومية</h1>
+            <ul id="todoList"></ul>
+            <input type="text" id="taskInput" placeholder="أدخل مهمة جديدة">
+            <button id="addTaskButton" onclick="addTask()">إضافة</button>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-database.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyByTnOxAhiNYbytuZV4pJT5Kwm6LcsSMzg",
+            authDomain: "chatz-da38d.firebaseapp.com",
+            databaseURL: "https://chatz-da38d-default-rtdb.firebaseio.com",
+            projectId: "chatz-da38d",
+            storageBucket: "chatz-da38d.appspot.com",
+            messagingSenderId: "681805463840",
+            appId: "1:681805463840:web:2b90061ef8a9d7dd7a9745",
+            measurementId: "G-4H6RT08N0Q"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const tasksRef = database.ref('tasks');
+
+        document.getElementById("loginForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            const password = document.getElementById("password").value;
+            if (password === "2207") {
+                document.querySelector(".login-page").style.display = "none";
+                document.querySelector(".todo-page").style.display = "block";
+                loadTasks();
+            } else {
+                alert("كلمة المرور غير صحيحة");
+            }
+        });
+
+        function loadTasks() {
+            tasksRef.on('child_added', function(snapshot) {
+                displayTask(snapshot.key, snapshot.val());
+            });
+
+            tasksRef.on('child_removed', function(snapshot) {
+                document.getElementById(snapshot.key).remove();
+            });
+        }
+
+        function addTask() {
+            const taskInput = document.getElementById('taskInput');
+            const taskText = taskInput.value.trim();
+
+            if (taskText !== '') {
+                const newTaskRef = tasksRef.push();
+                newTaskRef.set({ text: taskText });
+                taskInput.value = '';
+            }
+        }
+
+        function displayTask(taskId, task) {
+            const taskList = document.getElementById('todoList');
+            const taskItem = document.createElement('li');
+            taskItem.id = taskId;
+            taskItem.className = 'todo-item';
+
+            const taskText = document.createElement('span');
+            taskText.textContent = task.text;
+
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'حذف';
+            deleteButton.onclick = function() {
+                tasksRef.child(taskId).remove();
+            };
+
+            taskItem.appendChild(taskText);
+            taskItem.appendChild(deleteButton);
+            taskList.appendChild(taskItem);
+        }
+    </script>
+
+
+
+
+
 </body>
 </html>
