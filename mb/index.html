@@ -4,7 +4,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Almarai&display=swap">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title></title>
+    <title>دردشة</title>
     <style>
         body {
             font-family: 'Almarai', sans-serif;
@@ -78,6 +78,11 @@
             background-color: white;
         }
 
+        .bubble img {
+            max-width: 100%;
+            border-radius: 10px;
+        }
+
         .bubble:after {
             content: '';
             position: absolute;
@@ -117,7 +122,7 @@
             margin-right: 10px;
         }
 
-        #sendButton {
+        #sendButton, #imageButton {
             background-color: #25d366;
             border: none;
             color: white;
@@ -128,8 +133,12 @@
             transition: background-color 0.3s;
         }
 
-        #sendButton:hover {
+        #sendButton:hover, #imageButton:hover {
             background-color: #20b257;
+        }
+
+        #imageInput {
+            display: none;
         }
     </style>
 </head>
@@ -137,7 +146,7 @@
     <div class="header">
         <div style="display: flex; align-items: center;">
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/1200px-WhatsApp.svg.png" alt="Profile">
-            <h1>دردشة </h1>
+            <h1>دردشة</h1>
         </div>
         <div>...</div>
     </div>
@@ -146,12 +155,15 @@
         <div id="chat"></div>
         <div id="messageInputContainer">
             <input type="text" id="messageInput" placeholder="اكتب رسالتك هنا...">
+            <input type="file" id="imageInput" accept="image/*" onchange="sendImage()">
+            <button id="imageButton" onclick="document.getElementById('imageInput').click()">📷</button>
             <button id="sendButton" onclick="sendMessage()">&#10148;</button>
         </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-storage.js"></script>
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyByTnOxAhiNYbytuZV4pJT5Kwm6LcsSMzg",
@@ -166,7 +178,8 @@
 
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
-        const chatRef = database.ref('chaatt');
+        const storage = firebase.storage();
+        const chatRef = database.ref('chat');
 
         const chatDiv = document.getElementById('chat');
 
@@ -177,7 +190,11 @@
             if ((message.sender === currentUser && message.receiver === getOtherUser()) ||
                 (message.sender === getOtherUser() && message.receiver === currentUser)) {
                 const type = message.sender === currentUser ? 'sent' : 'received';
-                displayMessage(message.text, type);
+                if (message.imageUrl) {
+                    displayImage(message.imageUrl, type);
+                } else {
+                    displayMessage(message.text, type);
+                }
             }
         });
 
@@ -198,6 +215,22 @@
             chatDiv.scrollTop = chatDiv.scrollHeight;
         }
 
+        function displayImage(imageUrl, type = 'sent') {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', type);
+
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.classList.add('bubble');
+
+            const img = document.createElement('img');
+            img.src = imageUrl;
+
+            bubbleDiv.appendChild(img);
+            messageDiv.appendChild(bubbleDiv);
+            chatDiv.appendChild(messageDiv);
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+        }
+
         function sendMessage() {
             const messageInput = document.getElementById('messageInput');
             const message = messageInput.value.trim();
@@ -211,6 +244,25 @@
 
                 chatRef.push(newMessage);
                 messageInput.value = '';
+            }
+        }
+
+        function sendImage() {
+            const imageInput = document.getElementById('imageInput');
+            const file = imageInput.files[0];
+
+            if (file) {
+                const storageRef = storage.ref('images/' + file.name);
+                storageRef.put(file).then(() => {
+                    storageRef.getDownloadURL().then((url) => {
+                        const newMessage = {
+                            imageUrl: url,
+                            sender: currentUser,
+                            receiver: getOtherUser()
+                        };
+                        chatRef.push(newMessage);
+                    });
+                });
             }
         }
     </script>
