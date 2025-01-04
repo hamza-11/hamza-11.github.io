@@ -10,8 +10,8 @@
             font-family: 'Almarai', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #121212; /* تغيير خلفية الصفحة إلى اللون الداكن */
-            color: #f5f2f2; /* تغيير النص إلى اللون الأبيض */
+            background-color: #121212;
+            color: #f5f2f2;
             text-align: center;
         }
         .container {
@@ -22,58 +22,68 @@
             height: 100vh;
         }
         #chat {
-            border: 1px solid #444; /* تغيير لون الحدود إلى لون داكن */
-            border-radius: 5px;
+            border: 1px solid #444;
+            border-radius: 10px;
             padding: 10px;
             margin-bottom: 20px;
             max-height: 300px;
             overflow-y: scroll;
-            width: 80%;
-            margin: 0 auto;
-            background-color: #1e1e1e; /* تغيير خلفية صندوق الدردشة إلى لون داكن */
+            width: 90%;
+            background-color: #1e1e1e;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
         }
         #messageInput {
-            width: calc(80% - 70px);
-            padding: 8px;
+            width: calc(90% - 70px);
+            padding: 10px;
             font-size: 16px;
-            border-radius: 5px 0 0 5px;
-            border: 1px solid #444; /* تغيير لون الحدود إلى لون داكن */
+            border-radius: 10px 0 0 10px;
+            border: 1px solid #444;
             border-right: none;
-            background-color: #333; /* تغيير خلفية حقل الإدخال إلى لون داكن */
-            color: #f5f2f2; /* تغيير لون النص إلى الأبيض */
+            background-color: #333;
+            color: #f5f2f2;
         }
         #messageInput:focus {
             outline: none;
+            box-shadow: 0 0 8px #4CAF50;
         }
         #sendButton {
             width: 70px;
-            padding: 8px;
+            padding: 10px;
             font-size: 16px;
             border: none;
-            border-radius: 0 5px 5px 0;
+            border-radius: 0 10px 10px 0;
             background-color: #4CAF50;
             color: white;
             cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #sendButton:hover {
+            background-color: #45a049;
         }
         #rButton, #sButton, #deleteButton, #uploadImageButton, #sendImageButton {
             width: 150px;
-            padding: 8px;
+            padding: 10px;
             font-size: 16px;
             border: none;
-            border-radius: 5px;
+            border-radius: 10px;
             background-color: #8B0000;
             color: white;
             cursor: pointer;
             margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        #rButton:hover, #sButton:hover, #deleteButton:hover, #uploadImageButton:hover, #sendImageButton:hover {
+            background-color: #a30000;
         }
         .message {
-            background-color: #333; /* تغيير خلفية الرسائل إلى لون داكن */
+            background-color: #333;
             padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 5px;
-            width: 80%;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            width: 90%;
             margin: 0 auto;
-            color: #f5f2f2; /*  تغيير لون نص الرسائل إلى الأبيض */
+            color: #f5f2f2;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
         }
         .message p {
             margin: 0;
@@ -81,30 +91,182 @@
         }
         .message span {
             font-size: 12px;
-            color: #f5f2f2; /* تغيير لون التوقيت إلى اللون الرمادي */
+            color: #ccc;
             margin-left: 10px;
         }
-        .login-page, .chat-page {
-            width: 80%;
-            margin: 0 auto;
-        }
         .login-page {
-            display: block;
-            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
         .login-logo {
-            position: center;
-            top: 10px;
-            left: 10px;
             width: 200px;
             height: auto;
+            margin-bottom: 20px;
         }
         .chat-page {
             display: none;
         }
+        h1 {
+            margin: 20px 0;
+        }
     </style>
 </head>
 <body dir="rtl">
-    
+    <div class="container">
+        <div class="login-page">
+            <img src="https://raw.githubusercontent.com/hamza-11/chatz/main/Logo.png" alt="لوغو" class="login-logo">
+            <h1>مديرية الصحة و السكان لولاية الجلفة</h1>
+            <form id="loginForm">
+                <label for="password">كلمة المرور:</label>
+                <input type="password" id="password" name="password" style="background-color: #333; color: #ffffff; padding: 10px; border-radius: 5px; border: 1px solid #444;">
+                <button id="sButton" type="submit">تسجيل الدخول</button>
+            </form>
+        </div>
+
+        <div class="chat-page">
+            <h1>الاتصال بالمؤسسات الصحية</h1>
+            <div id="chat"></div>
+            <input type="file" id="imageInput" accept="image/*" style="display: none;">
+            <button id="uploadImageButton" onclick="document.getElementById('imageInput').click();">رفع صورة</button>
+            <button id="sendImageButton" onclick="sendImage()">إرسال صورة</button>
+            <input type="text" id="messageInput" placeholder="اكتب رسالتك">
+            <button id="sendButton" onclick="sendMessage()">إرسال</button>
+            <button id="rButton" onclick="refreshPage()">تحديث الصفحة</button>
+            <button id="deleteButton" onclick="deleteAllMessages()">حذف جميع الرسائل</button>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-database.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyByTnOxAhiNYbytuZV4pJT5Kwm6LcsSMzg",
+            authDomain: "chatz-da38d.firebaseapp.com",
+            databaseURL: "https://chatz-da38d-default-rtdb.firebaseio.com",
+            projectId: "chatz-da38d",
+            storageBucket: "chatz-da38d.appspot.com",
+            messagingSenderId: "681805463840",
+            appId: "1:681805463840:web:2b90061ef8a9d7dd7a9745",
+            measurementId: "G-4H6RT08N0Q"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const chatRef = database.ref('chat');
+
+        document.getElementById("loginForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            const password = document.getElementById("password").value;
+            const correctPassword = "zara";
+            if (password === correctPassword) {
+                document.querySelector(".login-page").style.display = "none";
+                document.querySelector(".chat-page").style.display = "block";
+            } else {
+                alert("كلمة المرور غير صحيحة");
+            }
+        });
+
+        chatRef.on('child_added', function(snapshot) {
+            const message = snapshot.val();
+            displayMessage(message);
+        });
+
+        function displayMessage(message) {
+            const chatDiv = document.getElementById('chat');
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message');
+            const messageText = document.createElement('p');
+            const messageTime = document.createElement('span');
+
+            const messageDate = new Date(message.timestamp);
+            messageTime.innerText = messageDate.toLocaleTimeString();
+
+            if (message.isImage) {
+                const imageElement = document.createElement('img');
+                imageElement.src = 'data:image/jpeg;base64,' + message.message;
+                imageElement.style.maxWidth = '100%';
+                messageDiv.appendChild(imageElement);
+            } else {
+                const decodedMessage = atob(message.message);
+                messageText.innerText = decodedMessage;
+                messageText.addEventListener('dblclick', function() {
+                    messageText.innerText = message.originalMessage;
+                });
+                messageDiv.appendChild(messageText);
+            }
+
+            messageDiv.appendChild(messageTime);
+            chatDiv.insertBefore(messageDiv, chatDiv.firstChild);
+            chatDiv.scrollTop = 0;
+        }
+
+        async function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = 'حمزة : ' + messageInput.value;
+            const timestamp = Date.now();
+
+            if (message.trim() !== '') {
+                const encodedMessage = await encodeMessage(message);
+                chatRef.push({
+                    message: encodedMessage,
+                    originalMessage: message,
+                    timestamp: timestamp
+                });
+                messageInput.value = '';
+            }
+        }
+
+        async function encodeMessage(message) {
+            const encoder = new TextEncoder();
+            const encodedArray = encoder.encode(message);
+            return btoa(String.fromCharCode.apply(null, encodedArray));
+        }
+
+        function refreshPage() {
+            location.reload();
+        }
+
+        function deleteAllMessages() {
+            if (confirm("هل أنت متأكد أنك تريد حذف جميع الرسائل؟")) {
+                chatRef.remove()
+                    .then(() => {
+                        alert("تم حذف جميع الرسائل بنجاح.");
+                        document.getElementById('chat').innerHTML = '';
+                    })
+                    .catch((error) => {
+                        console.error("حدث خطأ أثناء حذف الرسائل: ", error);
+                    });
+            }
+        }
+
+        async function sendImage() {
+            const fileInput = document.getElementById('imageInput');
+            const file = fileInput.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onloadend = async function() {
+                    const base64Image = reader.result.split(',')[1];
+                    const message = 'حمزة : صورة';
+                    const timestamp = Date.now();
+
+                    chatRef.push({
+                        message: base64Image,
+                        originalMessage: message,
+                        timestamp: timestamp,
+                        isImage: true
+                    });
+
+                    fileInput.value = ''; // Clear the file input
+                };
+                reader.readAsDataURL(file);
+            } else {
+                alert("يرجى اختيار صورة أولاً");
+            }
+        }
+    </script>
 </body>
 </html>
+
