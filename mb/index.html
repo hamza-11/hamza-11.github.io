@@ -165,7 +165,7 @@
             if ((message.sender === currentUser && message.receiver === getOtherUser()) ||
                 (message.sender === getOtherUser() && message.receiver === currentUser)) {
                 const type = message.sender === currentUser ? 'sent' : 'received';
-                displayMessage(message.text, type);
+                displayMessage(message.text, type, message.image);
             }
         });
 
@@ -173,16 +173,16 @@
             return currentUser === 'حمزة' ? 'سنية' : 'حمزة';
         }
 
-        function displayMessage(content, type = 'sent') {
+        function displayMessage(content, type = 'sent', image = null) {
             const messageDiv = document.createElement('div');
             messageDiv.classList.add('message', type);
 
             const bubbleDiv = document.createElement('div');
             bubbleDiv.classList.add('bubble');
 
-            if (content.startsWith('http')) {
+            if (image) {
                 const img = document.createElement('img');
-                img.src = content;
+                img.src = image;
                 bubbleDiv.appendChild(img);
             } else {
                 bubbleDiv.textContent = content;
@@ -217,9 +217,10 @@
             storageRef.put(file).then(() => {
                 storageRef.getDownloadURL().then((url) => {
                     const newMessage = {
-                        text: url,
+                        text: "صورة مرفقة",
                         sender: currentUser,
-                        receiver: getOtherUser()
+                        receiver: getOtherUser(),
+                        image: url
                     };
 
                     chatRef.push(newMessage);
