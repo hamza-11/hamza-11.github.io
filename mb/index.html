@@ -132,7 +132,7 @@
         <div id="chat"></div>
         <div id="messageInputContainer">
             <input type="text" id="messageInput" placeholder="اكتب رسالتك هنا...">
-            <input type="file" id="imageInput" accept="image/*" style="display:none;" onchange="uploadImage()">
+            <input type="file" id="imageInput" accept="image/*" style="display:none;" onchange="sendImage()">
             <button id="imageButton" onclick="document.getElementById('imageInput').click()">📷</button>
             <button id="sendButton" onclick="sendMessage()">&#10148;</button>
         </div>
@@ -182,7 +182,7 @@
 
             if (image) {
                 const img = document.createElement('img');
-                img.src = image;
+                img.src = 'data:image/jpeg;base64,' + image;
                 bubbleDiv.appendChild(img);
             } else {
                 bubbleDiv.textContent = content;
@@ -209,23 +209,31 @@
             }
         }
 
-        function uploadImage() {
+        function sendImage() {
             const fileInput = document.getElementById('imageInput');
             const file = fileInput.files[0];
-            const storageRef = storage.ref('images/' + file.name);
 
-            storageRef.put(file).then(() => {
-                storageRef.getDownloadURL().then((url) => {
+            if (file) {
+                const reader = new FileReader();
+                reader.onloadend = function() {
+                    const base64Image = reader.result.split(',')[1];
+                    const message = 'صورة مرفقة';
+                    const timestamp = Date.now();
+
                     const newMessage = {
-                        text: "صورة مرفقة",
+                        text: message,
                         sender: currentUser,
                         receiver: getOtherUser(),
-                        image: url
+                        image: base64Image
                     };
 
                     chatRef.push(newMessage);
-                });
-            });
+                    fileInput.value = ''; // Clear the file input
+                };
+                reader.readAsDataURL(file);
+            } else {
+                alert("يرجى اختيار صورة أولاً");
+            }
         }
     </script>
 </body>
