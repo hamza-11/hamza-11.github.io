@@ -12,7 +12,6 @@
             padding: 0;
             background-color: #ece5dd;
         }
-
         .header {
             background-color: #075e54;
             color: white;
@@ -22,46 +21,38 @@
             justify-content: space-between;
             box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
         }
-
         .header img {
             width: 40px;
             height: 40px;
             border-radius: 50%;
             margin-right: 10px;
         }
-
         .header h1 {
             font-size: 20px;
             margin: 0;
         }
-
         .container {
             display: flex;
             flex-direction: column;
             height: calc(100vh - 60px);
         }
-
         #chat {
             flex: 1;
             overflow-y: auto;
             padding: 15px;
             background-color: #e5ddd5;
         }
-
         .message {
             display: flex;
             align-items: flex-end;
             margin-bottom: 10px;
         }
-
         .message.sent {
             justify-content: flex-end;
         }
-
         .message.received {
             justify-content: flex-start;
         }
-
         .message .bubble {
             max-width: 60%;
             padding: 10px 15px;
@@ -69,20 +60,16 @@
             box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2);
             position: relative;
         }
-
         .message.sent .bubble {
             background-color: #dcf8c6;
         }
-
         .message.received .bubble {
             background-color: white;
         }
-
         .bubble img {
             max-width: 100%;
             border-radius: 10px;
         }
-
         .bubble:after {
             content: '';
             position: absolute;
@@ -91,19 +78,16 @@
             height: 0;
             border: 10px solid transparent;
         }
-
         .message.sent .bubble:after {
             right: -10px;
             border-left-color: #dcf8c6;
             border-right: none;
         }
-
         .message.received .bubble:after {
             left: -10px;
             border-right-color: white;
             border-left: none;
         }
-
         #messageInputContainer {
             display: flex;
             align-items: center;
@@ -111,7 +95,6 @@
             background-color: #f0f0f0;
             border-top: 1px solid #ddd;
         }
-
         #messageInput {
             flex: 1;
             padding: 10px 15px;
@@ -121,7 +104,6 @@
             outline: none;
             margin-right: 10px;
         }
-
         #sendButton, #imageButton {
             background-color: #25d366;
             border: none;
@@ -132,13 +114,8 @@
             cursor: pointer;
             transition: background-color 0.3s;
         }
-
         #sendButton:hover, #imageButton:hover {
             background-color: #20b257;
-        }
-
-        #imageInput {
-            display: none;
         }
     </style>
 </head>
@@ -155,7 +132,7 @@
         <div id="chat"></div>
         <div id="messageInputContainer">
             <input type="text" id="messageInput" placeholder="اكتب رسالتك هنا...">
-            <input type="file" id="imageInput" accept="image/*" onchange="sendImage()">
+            <input type="file" id="imageInput" accept="image/*" style="display:none;" onchange="uploadImage()">
             <button id="imageButton" onclick="document.getElementById('imageInput').click()">📷</button>
             <button id="sendButton" onclick="sendMessage()">&#10148;</button>
         </div>
@@ -180,9 +157,7 @@
         const database = firebase.database();
         const storage = firebase.storage();
         const chatRef = database.ref('chaatt');
-
         const chatDiv = document.getElementById('chat');
-
         const currentUser = prompt("أدخل كلمة المرور");
 
         chatRef.on('child_added', function(snapshot) {
@@ -190,11 +165,7 @@
             if ((message.sender === currentUser && message.receiver === getOtherUser()) ||
                 (message.sender === getOtherUser() && message.receiver === currentUser)) {
                 const type = message.sender === currentUser ? 'sent' : 'received';
-                if (message.imageUrl) {
-                    displayImage(message.imageUrl, type);
-                } else {
-                    displayMessage(message.text, type);
-                }
+                displayMessage(message.text, type);
             }
         });
 
@@ -202,30 +173,21 @@
             return currentUser === 'حمزة' ? 'سنية' : 'حمزة';
         }
 
-        function displayMessage(message, type = 'sent') {
-            const messageDiv = document.createElement('div');
-            messageDiv.classList.add('message', type);
-
-            const bubbleDiv = document.createElement('div');
-            bubbleDiv.classList.add('bubble');
-            bubbleDiv.textContent = message;
-
-            messageDiv.appendChild(bubbleDiv);
-            chatDiv.appendChild(messageDiv);
-            chatDiv.scrollTop = chatDiv.scrollHeight;
-        }
-
-        function displayImage(imageUrl, type = 'sent') {
+        function displayMessage(content, type = 'sent') {
             const messageDiv = document.createElement('div');
             messageDiv.classList.add('message', type);
 
             const bubbleDiv = document.createElement('div');
             bubbleDiv.classList.add('bubble');
 
-            const img = document.createElement('img');
-            img.src = imageUrl;
+            if (content.startsWith('http')) {
+                const img = document.createElement('img');
+                img.src = content;
+                bubbleDiv.appendChild(img);
+            } else {
+                bubbleDiv.textContent = content;
+            }
 
-            bubbleDiv.appendChild(img);
             messageDiv.appendChild(bubbleDiv);
             chatDiv.appendChild(messageDiv);
             chatDiv.scrollTop = chatDiv.scrollHeight;
@@ -247,23 +209,22 @@
             }
         }
 
-        function sendImage() {
-            const imageInput = document.getElementById('imageInput');
-            const file = imageInput.files[0];
+        function uploadImage() {
+            const fileInput = document.getElementById('imageInput');
+            const file = fileInput.files[0];
+            const storageRef = storage.ref('images/' + file.name);
 
-            if (file) {
-                const storageRef = storage.ref('images/' + file.name);
-                storageRef.put(file).then(() => {
-                    storageRef.getDownloadURL().then((url) => {
-                        const newMessage = {
-                            imageUrl: url,
-                            sender: currentUser,
-                            receiver: getOtherUser()
-                        };
-                        chatRef.push(newMessage);
-                    });
+            storageRef.put(file).then(() => {
+                storageRef.getDownloadURL().then((url) => {
+                    const newMessage = {
+                        text: url,
+                        sender: currentUser,
+                        receiver: getOtherUser()
+                    };
+
+                    chatRef.push(newMessage);
                 });
-            }
+            });
         }
     </script>
 </body>
