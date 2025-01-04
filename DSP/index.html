@@ -170,7 +170,7 @@
 
         const chatDiv = document.getElementById('chat');
 
-        const currentUser = prompt("أدخل اسم المستخدم (حمزة أو حبيبة):");
+        const currentUser = prompt("أدخل كلمة المرور");
 
         chatRef.on('child_added', function(snapshot) {
             const message = snapshot.val();
