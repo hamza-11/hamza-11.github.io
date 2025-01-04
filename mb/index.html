@@ -165,7 +165,7 @@
             if ((message.sender === currentUser && message.receiver === getOtherUser()) ||
                 (message.sender === getOtherUser() && message.receiver === currentUser)) {
                 const type = message.sender === currentUser ? 'sent' : 'received';
-                displayMessage(message.text, type, message.image);
+                displayMessage(message.text, type, message.imageUrl);
             }
         });
 
@@ -173,16 +173,16 @@
             return currentUser === 'حمزة' ? 'سنية' : 'حمزة';
         }
 
-        function displayMessage(content, type = 'sent', image = null) {
+        function displayMessage(content, type = 'sent', imageUrl = null) {
             const messageDiv = document.createElement('div');
             messageDiv.classList.add('message', type);
 
             const bubbleDiv = document.createElement('div');
             bubbleDiv.classList.add('bubble');
 
-            if (image) {
+            if (imageUrl) {
                 const img = document.createElement('img');
-                img.src = 'data:image/jpeg;base64,' + image;
+                img.src = imageUrl;  // عرض الصورة من الرابط
                 bubbleDiv.appendChild(img);
             } else {
                 bubbleDiv.textContent = content;
@@ -214,23 +214,28 @@
             const file = fileInput.files[0];
 
             if (file) {
-                const reader = new FileReader();
-                reader.onloadend = function() {
-                    const base64Image = reader.result.split(',')[1];
-                    const message = 'صورة مرفقة';
-                    const timestamp = Date.now();
+                const storageRef = storage.ref();
+                const imageRef = storageRef.child('images/' + file.name);
 
-                    const newMessage = {
-                        text: message,
-                        sender: currentUser,
-                        receiver: getOtherUser(),
-                        image: base64Image
-                    };
+                // رفع الصورة إلى Firebase Storage
+                imageRef.put(file).then(function(snapshot) {
+                    console.log('تم رفع الصورة بنجاح!');
+                    snapshot.ref.getDownloadURL().then(function(downloadURL) {
+                        const message = 'صورة مرفقة';
+                        const newMessage = {
+                            text: message,
+                            sender: currentUser,
+                            receiver: getOtherUser(),
+                            imageUrl: downloadURL // تخزين رابط الصورة في قاعدة البيانات
+                        };
 
-                    chatRef.push(newMessage);
-                    fileInput.value = ''; // Clear the file input
-                };
-                reader.readAsDataURL(file);
+                        // إرسال الرسالة مع رابط الصورة
+                        chatRef.push(newMessage);
+                        fileInput.value = ''; // Clear the file input
+                    });
+                }).catch(function(error) {
+                    console.error("حدث خطأ أثناء رفع الصورة:", error);
+                });
             } else {
                 alert("يرجى اختيار صورة أولاً");
             }
