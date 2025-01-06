@@ -181,6 +181,9 @@
         </div>
     </div>
 
+    <!-- إضافة ملف صوتي -->
+    <audio id="notificationSound" src="notification.wav"></audio>
+
     <!-- إضافة مكتبة ضغط الصور -->
     <script src="https://cdn.jsdelivr.net/npm/browser-image-compression/dist/browser-image-compression.min.js"></script>
 
@@ -203,8 +206,11 @@
         const chatRef = database.ref('chat');
 
         const chatDiv = document.getElementById('chat');
+        const notificationSound = document.getElementById('notificationSound');
 
         const currentUser = prompt("أدخل كلمة المرور");
+
+        let isFirstLoad = true; // متغير لتحديد ما إذا كانت هذه هي المرة الأولى لتحميل الصفحة
 
         chatRef.on('child_added', function(snapshot) {
             const message = snapshot.val();
@@ -212,8 +218,18 @@
                 (message.sender === getOtherUser() && message.receiver === currentUser)) {
                 const type = message.sender === currentUser ? 'sent' : 'received';
                 displayMessage(message.text, message.image, message.timestamp, type);
+
+                // تشغيل الصوت فقط إذا لم تكن هذه هي المرة الأولى لتحميل الصفحة
+                if (!isFirstLoad && type === 'received') {
+                    notificationSound.play();
+                }
             }
         });
+
+        // بعد تحميل الرسائل القديمة، قم بتعيين isFirstLoad إلى false
+        setTimeout(() => {
+            isFirstLoad = false;
+        }, 1000);
 
         function getOtherUser() {
             return currentUser === 'حمزة' ? 'حبيبة' : 'حمزة';
@@ -252,7 +268,7 @@
 
         async function compressImage(file) {
             const options = {
-                maxSizeMB: 0.3, // الحد الأقصى لحجم الصورة بعد الضغط (0.5 ميجابايت)
+                maxSizeMB: 0.2, // الحد الأقصى لحجم الصورة بعد الضغط (0.5 ميجابايت)
                 maxWidthOrHeight: 400, // الحد الأقصى لعرض أو ارتفاع الصورة
                 useWebWorker: true, // استخدام Web Worker لتحسين الأداء
                 fileType: 'image/jpeg', // نوع الملف النهائي
