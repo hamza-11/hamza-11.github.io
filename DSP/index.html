@@ -211,6 +211,18 @@
         const currentUser = prompt("أدخل كلمة المرور");
 
         let isFirstLoad = true; // متغير لتحديد ما إذا كانت هذه هي المرة الأولى لتحميل الصفحة
+        let isUserInteracted = false; // متغير لتحديد ما إذا كان المستخدم قد تفاعل مع الصفحة
+
+        // تفعيل الصوت بعد تفاعل المستخدم مع الصفحة
+        document.addEventListener('click', () => {
+            if (!isUserInteracted) {
+                isUserInteracted = true;
+                notificationSound.play().then(() => {
+                    notificationSound.pause(); // إيقاف الصوت فورًا بعد التشغيل
+                    notificationSound.currentTime = 0; // إعادة تعيين الوقت إلى البداية
+                });
+            }
+        });
 
         chatRef.on('child_added', function(snapshot) {
             const message = snapshot.val();
@@ -219,8 +231,8 @@
                 const type = message.sender === currentUser ? 'sent' : 'received';
                 displayMessage(message.text, message.image, message.timestamp, type);
 
-                // تشغيل الصوت فقط إذا لم تكن هذه هي المرة الأولى لتحميل الصفحة
-                if (!isFirstLoad && type === 'received') {
+                // تشغيل الصوت فقط إذا لم تكن هذه هي المرة الأولى لتحميل الصفحة وكان المستخدم قد تفاعل مع الصفحة
+                if (!isFirstLoad && type === 'received' && isUserInteracted) {
                     notificationSound.play();
                 }
             }
