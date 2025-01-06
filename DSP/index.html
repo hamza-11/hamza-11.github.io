@@ -252,8 +252,8 @@
 
         async function compressImage(file) {
             const options = {
-                maxSizeMB: 0.5, // الحد الأقصى لحجم الصورة بعد الضغط (0.5 ميجابايت)
-                maxWidthOrHeight: 800, // الحد الأقصى لعرض أو ارتفاع الصورة
+                maxSizeMB: 0.3, // الحد الأقصى لحجم الصورة بعد الضغط (0.5 ميجابايت)
+                maxWidthOrHeight: 400, // الحد الأقصى لعرض أو ارتفاع الصورة
                 useWebWorker: true, // استخدام Web Worker لتحسين الأداء
                 fileType: 'image/jpeg', // نوع الملف النهائي
             };
