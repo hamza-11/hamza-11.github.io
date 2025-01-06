@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>دردشة</title>
-    <style>
+   
+     <style>
         body {
             font-family: 'Almarai', sans-serif;
             margin: 0;
@@ -158,6 +159,8 @@
             background-color: #20b257;
         }
     </style>
+
+  
 </head>
 <body dir="rtl">
     <div class="header">
@@ -177,6 +180,9 @@
             <button id="sendButton" onclick="sendMessage()">&#10148;</button>
         </div>
     </div>
+
+    <!-- إضافة مكتبة ضغط الصور -->
+    <script src="https://cdn.jsdelivr.net/npm/browser-image-compression/dist/browser-image-compression.min.js"></script>
 
     <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-database.js"></script>
@@ -244,16 +250,34 @@
             chatDiv.scrollTop = chatDiv.scrollHeight;
         }
 
-        function sendMessage() {
+        async function compressImage(file) {
+            const options = {
+                maxSizeMB: 0.5, // الحد الأقصى لحجم الصورة بعد الضغط (0.5 ميجابايت)
+                maxWidthOrHeight: 800, // الحد الأقصى لعرض أو ارتفاع الصورة
+                useWebWorker: true, // استخدام Web Worker لتحسين الأداء
+                fileType: 'image/jpeg', // نوع الملف النهائي
+            };
+
+            try {
+                const compressedFile = await imageCompression(file, options);
+                return compressedFile;
+            } catch (error) {
+                console.error('حدث خطأ أثناء ضغط الصورة:', error);
+                return file; // إذا فشل الضغط، يتم استخدام الملف الأصلي
+            }
+        }
+
+        async function sendMessage() {
             const messageInput = document.getElementById('messageInput');
             const imageInput = document.getElementById('imageInput');
             const message = messageInput.value.trim();
             const imageFile = imageInput.files[0];
 
             if (imageFile) {
+                const compressedFile = await compressImage(imageFile); // ضغط الصورة
                 const reader = new FileReader();
                 reader.onload = function(event) {
-                    const imageBase64 = event.target.result; // تحويل الصورة إلى Base64
+                    const imageBase64 = event.target.result; // تحويل الصورة المضغوطة إلى Base64
                     const newMessage = {
                         text: message,
                         image: imageBase64, // تخزين الصورة كـ Base64
@@ -266,7 +290,7 @@
                     messageInput.value = '';
                     imageInput.value = '';
                 };
-                reader.readAsDataURL(imageFile); // قراءة الصورة كـ Base64
+                reader.readAsDataURL(compressedFile); // قراءة الصورة المضغوطة كـ Base64
             } else if (message) {
                 const newMessage = {
                     text: message,
