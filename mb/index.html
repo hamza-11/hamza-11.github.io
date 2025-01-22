@@ -1,219 +1,144 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="fr">
 <head>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Almarai&display=swap">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title></title>
+    <title>Apprendre à Lire en Français</title>
     <style>
+        /* CSS هنا */
         body {
-            font-family: 'Almarai', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #ece5dd;
-        }
-
-        .header {
-            background-color: #075e54;
-            color: white;
-            padding: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        .header img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            margin-right: 10px;
-        }
-
-        .header h1 {
-            font-size: 20px;
-            margin: 0;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            text-align: center;
+            padding: 20px;
         }
 
         .container {
-            display: flex;
-            flex-direction: column;
-            height: calc(100vh - 60px);
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
-        #chat {
-            flex: 1;
-            overflow-y: auto;
-            padding: 15px;
-            background-color: #e5ddd5;
+        h1 {
+            color: #ff6f61;
         }
 
-        .message {
-            display: flex;
-            align-items: flex-end;
-            margin-bottom: 10px;
-        }
-
-        .message.sent {
-            justify-content: flex-end;
-        }
-
-        .message.received {
-            justify-content: flex-start;
-        }
-
-        .message .bubble {
-            max-width: 60%;
-            padding: 10px 15px;
-            border-radius: 15px;
-            box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2);
-            position: relative;
-        }
-
-        .message.sent .bubble {
-            background-color: #dcf8c6;
-        }
-
-        .message.received .bubble {
-            background-color: white;
-        }
-
-        .bubble:after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            width: 0;
-            height: 0;
-            border: 10px solid transparent;
-        }
-
-        .message.sent .bubble:after {
-            right: -10px;
-            border-left-color: #dcf8c6;
-            border-right: none;
-        }
-
-        .message.received .bubble:after {
-            left: -10px;
-            border-right-color: white;
-            border-left: none;
-        }
-
-        #messageInputContainer {
-            display: flex;
-            align-items: center;
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-bottom: 20px;
             padding: 10px;
-            background-color: #f0f0f0;
-            border-top: 1px solid #ddd;
-        }
-
-        #messageInput {
-            flex: 1;
-            padding: 10px 15px;
             font-size: 16px;
-            border: 1px solid #ddd;
-            border-radius: 20px;
-            outline: none;
-            margin-right: 10px;
+            border: 2px solid #ff6f61;
+            border-radius: 5px;
         }
 
-        #sendButton {
-            background-color: #25d366;
-            border: none;
+        button {
+            background-color: #ff6f61;
             color: white;
-            padding: 10px;
-            font-size: 16px;
-            border-radius: 50%;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            font-size: 16px;
+            margin: 5px;
         }
 
-        #sendButton:hover {
-            background-color: #20b257;
+        button:hover {
+            background-color: #ff3b2f;
+        }
+
+        #buttonsContainer {
+            margin-top: 20px;
+        }
+
+        .sentence-button {
+            background-color: #6b5b95;
+            color: white;
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .sentence-button:hover {
+            background-color: #524578;
+        }
+
+        .speed-controls {
+            margin-top: 20px;
+        }
+
+        .speed-controls label {
+            font-size: 16px;
+            color: #333;
+        }
+
+        .speed-slider {
+            width: 100%;
+            margin-top: 10px;
         }
     </style>
 </head>
-<body dir="rtl">
-    <div class="header">
-        <div style="display: flex; align-items: center;">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/1200px-WhatsApp.svg.png" alt="Profile">
-            <h1>دردشة </h1>
-        </div>
-        <div>...</div>
-    </div>
-
+<body>
     <div class="container">
-        <div id="chat"></div>
-        <div id="messageInputContainer">
-            <input type="text" id="messageInput" placeholder="اكتب رسالتك هنا...">
-            <button id="sendButton" onclick="sendMessage()">&#10148;</button>
+        <h1>Apprendre à Lire en Français</h1>
+        <textarea id="textInput" placeholder="Copiez votre texte ici..."></textarea>
+        <button onclick="createButtons()">Créer les Boutons</button>
+
+        <!-- عنصر السحب للتحكم في السرعة -->
+        <div class="speed-controls">
+            <label for="speedSlider">Vitesse de lecture: <span id="speedValue">1.0</span></label>
+            <input type="range" id="speedSlider" class="speed-slider" min="0.5" max="2" step="0.1" value="1">
         </div>
+
+        <div id="buttonsContainer"></div>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-database.js"></script>
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyByTnOxAhiNYbytuZV4pJT5Kwm6LcsSMzg",
-            authDomain: "chatz-da38d.firebaseapp.com",
-            databaseURL: "https://chatz-da38d-default-rtdb.firebaseio.com",
-            projectId: "chatz-da38d",
-            storageBucket: "chatz-da38d.appspot.com",
-            messagingSenderId: "681805463840",
-            appId: "1:681805463840:web:2b90061ef8a9d7dd7a9745",
-            measurementId: "G-4H6RT08N0Q"
-        };
+        // JavaScript هنا
+        let speechSpeed = 1; // السرعة الافتراضية
 
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-        const chatRef = database.ref('cchaatt');
+        // تحديث السرعة عند تغيير السحب
+        const speedSlider = document.getElementById('speedSlider');
+        const speedValue = document.getElementById('speedValue');
 
-        const chatDiv = document.getElementById('chat');
-
-        const currentUser = prompt("أدخل كلمة المرور");
-
-        chatRef.on('child_added', function(snapshot) {
-            const message = snapshot.val();
-            if ((message.sender === currentUser && message.receiver === getOtherUser()) ||
-                (message.sender === getOtherUser() && message.receiver === currentUser)) {
-                const type = message.sender === currentUser ? 'sent' : 'received';
-                displayMessage(message.text, type);
-            }
+        speedSlider.addEventListener('input', () => {
+            speechSpeed = parseFloat(speedSlider.value);
+            speedValue.textContent = speechSpeed.toFixed(1);
         });
 
-        function getOtherUser() {
-            return currentUser === 'حمزة' ? 'سنية' : 'حمزة';
+        function createButtons() {
+            const textInput = document.getElementById('textInput').value;
+            const sentences = textInput.split('.');
+            const buttonsContainer = document.getElementById('buttonsContainer');
+            buttonsContainer.innerHTML = '';
+
+            sentences.forEach(sentence => {
+                if (sentence.trim() !== '') {
+                    const button = document.createElement('button');
+                    button.innerText = sentence.trim();
+                    button.classList.add('sentence-button');
+                    button.addEventListener('click', () => {
+                        speak(sentence.trim());
+                    });
+                    buttonsContainer.appendChild(button);
+                }
+            });
         }
 
-        function displayMessage(message, type = 'sent') {
-            const messageDiv = document.createElement('div');
-            messageDiv.classList.add('message', type);
-
-            const bubbleDiv = document.createElement('div');
-            bubbleDiv.classList.add('bubble');
-            bubbleDiv.textContent = message;
-
-            messageDiv.appendChild(bubbleDiv);
-            chatDiv.appendChild(messageDiv);
-            chatDiv.scrollTop = chatDiv.scrollHeight;
-        }
-
-        function sendMessage() {
-            const messageInput = document.getElementById('messageInput');
-            const message = messageInput.value.trim();
-
-            if (message) {
-                const newMessage = {
-                    text: message,
-                    sender: currentUser,
-                    receiver: getOtherUser()
-                };
-
-                chatRef.push(newMessage);
-                messageInput.value = '';
-            }
+        function speak(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'fr-FR';
+            utterance.rate = speechSpeed; // تعيين سرعة القراءة
+            speechSynthesis.speak(utterance);
         }
     </script>
 </body>
 </html>
-
