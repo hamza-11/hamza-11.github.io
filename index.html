@@ -1,32 +1,50 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>صفحة الروابط</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin-top: 50px;
-        }
-        a {
-            font-size: 24px;
-            color: blue;
-            text-decoration: none;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>اختبار زر Ko-fi</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f5f5f5;
+      margin: 0;
+    }
+    .container {
+      text-align: center;
+      background-color: #fff;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+    p {
+      color: #666;
+      margin-bottom: 30px;
+    }
+  </style>
 </head>
 <body>
-    <h1>اختر أحد الروابط</h1>
-    <p>
-        <a href="EPH/index.html">EPH</a>
-    </p>
-    <p>
-        <a href="DSP/index.html">DSP</a>
-    </p>
+  <div class="container">
+    <h1>☕ اختبر زر Ko-fi</h1>
+    <p>اضغط على الزر لدعمي إذا أعجبك عملي:</p>
+
+    <!-- زر Ko-fi -->
+    <div id="kofi-widget"></div>
+    <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
+    <script type='text/javascript'>
+      kofiwidget2.init('Support me on Ko-fi', '#72a4f2', 'I2I21KKJKV');
+      kofiwidget2.draw();
+    </script>
+  </div>
 </body>
 </html>
+
+
