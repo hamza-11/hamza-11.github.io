@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ar">
+<head>
+  <meta charset="utf-8" />
+  <title>مولد روابط الصور</title>
+  <style>
+    body { font-family: system-ui; direction: rtl; padding: 20px; background:#f9f9f9; }
+    label { display:block; margin: 8px 0 4px; }
+    input, select, button {
+      padding: 6px 10px; font-size: 15px;
+      border-radius: 6px; border: 1px solid #ccc;
+    }
+    button { cursor:pointer; background:#0366d6; color:white; border:none; margin-top:12px; }
+    #results { margin-top:20px; display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; }
+    .card { background:white; border-radius:8px; padding:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08); text-align:center; }
+    .card img { max-width:100%; height:110px; object-fit:cover; border-radius:6px; margin-bottom:6px; }
+    .card a { font-size:14px; color:#0366d6; text-decoration:none; }
+  </style>
+</head>
+<body>
+  <h1>مولد روابط الصور</h1>
+
+  <label for="from">من رقم:</label>
+  <input type="number" id="from" value="1">
+
+  <label for="to">إلى رقم:</label>
+  <input type="number" id="to" value="10">
+
+  <label for="ext">نوع الملف (الامتداد):</label>
+  <input type="text" id="ext" value="jpg">
+
+  <button onclick="generate()">توليد الروابط</button>
+
+  <div id="results"></div>
+
+  <script>
+    function generate() {
+      const from = parseInt(document.getElementById("from").value);
+      const to = parseInt(document.getElementById("to").value);
+      const ext = document.getElementById("ext").value.trim().replace('.', '');
+
+      const results = document.getElementById("results");
+      results.innerHTML = ""; // مسح النتائج السابقة
+
+      for (let i = from; i <= to; i++) {
+        const filename = `${i}.${ext}`;
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <a href="${filename}" target="_blank" rel="noopener">
+            <img src="${filename}" alt="${filename}">
+            <div>افتح ${filename}</div>
+          </a>
+        `;
+        results.appendChild(card);
+      }
+    }
+  </script>
+</body>
+</html>
