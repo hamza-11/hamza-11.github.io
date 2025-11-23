@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title></title>
+    <title>دردشة</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Almarai&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -316,10 +316,9 @@
         let messages = [];
         let loadedCount = 20; // زيادة عدد الرسائل المحملة مبدئياً
         let isLoading = false;
-        let lastMessageKey = null;
 
         // استمع للرسائل الجديدة فقط
-        chatRef.orderByChild('timestamp').limitToLast(50).on("value", snapshot => {
+        chatRef.orderByChild('timestamp').on("value", snapshot => {
             const newMessages = [];
             snapshot.forEach(child => {
                 let msg = child.val();
@@ -377,21 +376,14 @@
             
             // عرض الرسائل المرئية فقط
             const fragment = document.createDocumentFragment();
-            const existingMessageIds = new Set();
             
-            // جمع معرفات الرسائل الحالية
-            Array.from(chatDiv.children).forEach(child => {
-                if (child.dataset.messageId) {
-                    existingMessageIds.add(child.dataset.messageId);
-                }
-            });
+            // مسح المحادثة الحالية وإعادة بنائها
+            chatDiv.innerHTML = '';
             
-            // إضافة الرسائل الجديدة فقط
+            // إضافة جميع الرسائل المرئية
             visible.forEach(msg => {
-                if (!existingMessageIds.has(msg.id)) {
-                    const messageElement = createMessageElement(msg);
-                    fragment.appendChild(messageElement);
-                }
+                const messageElement = createMessageElement(msg);
+                fragment.appendChild(messageElement);
             });
             
             chatDiv.appendChild(fragment);
@@ -451,13 +443,17 @@
                 reactionsContainer.className = "reactions-container";
                 
                 Object.entries(msg.reactions).forEach(([emoji, users]) => {
-                    const reaction = document.createElement("div");
-                    reaction.className = "reaction";
-                    reaction.innerHTML = `${emoji} <span class="reaction-count">${users.length}</span>`;
-                    reactionsContainer.appendChild(reaction);
+                    if (users && users.length > 0) {
+                        const reaction = document.createElement("div");
+                        reaction.className = "reaction";
+                        reaction.innerHTML = `${emoji} <span class="reaction-count">${users.length}</span>`;
+                        reactionsContainer.appendChild(reaction);
+                    }
                 });
                 
-                bubble.appendChild(reactionsContainer);
+                if (reactionsContainer.children.length > 0) {
+                    bubble.appendChild(reactionsContainer);
+                }
             }
 
             let time = document.createElement("div");
@@ -485,6 +481,7 @@
             const existingPicker = document.querySelector('.reaction-picker');
             if (existingPicker) {
                 existingPicker.remove();
+                return;
             }
 
             const emojis = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
@@ -495,7 +492,8 @@
                 const emojiOption = document.createElement("span");
                 emojiOption.className = "emoji-option";
                 emojiOption.textContent = emoji;
-                emojiOption.onclick = () => {
+                emojiOption.onclick = (e) => {
+                    e.stopPropagation();
                     addReaction(messageId, emoji);
                     picker.remove();
                 };
@@ -504,6 +502,7 @@
 
             // وضع المنتقي بالقرب من الزر
             const rect = button.getBoundingClientRect();
+            picker.style.position = 'fixed';
             picker.style.top = `${rect.top - 40}px`;
             picker.style.right = `${window.innerWidth - rect.right}px`;
             
@@ -527,6 +526,8 @@
             
             messageRef.once('value').then(snapshot => {
                 const message = snapshot.val();
+                if (!message) return;
+                
                 let reactions = message.reactions || {};
                 
                 if (!reactions[emoji]) {
@@ -548,6 +549,8 @@
                 
                 // تحديث التفاعلات في قاعدة البيانات
                 messageRef.update({ reactions });
+            }).catch(error => {
+                console.error('Error adding reaction:', error);
             });
         }
 
@@ -598,31 +601,6 @@
                 loadingIndicator.style.display = 'block';
             }
         }
-
-        // تحسينات للأداء: إلغاء تحميل الصور غير المرئية
-        const imageObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const img = entry.target;
-                    img.src = img.dataset.src;
-                    imageObserver.unobserve(img);
-                }
-            });
-        });
-
-        // تطبيق المراقبة على الصور الجديدة
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                mutation.addedNodes.forEach((node) => {
-                    if (node.nodeType === 1) { // عنصر
-                        const images = node.querySelectorAll('img[data-src]');
-                        images.forEach(img => imageObserver.observe(img));
-                    }
-                });
-            });
-        });
-
-        observer.observe(chatDiv, { childList: true, subtree: true });
     </script>
 </body>
 </html>
