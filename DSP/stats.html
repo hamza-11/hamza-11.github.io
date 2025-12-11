@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إحصائيات الزيارات</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; direction: rtl; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        th { background-color: #075e54; color: white; }
+    </style>
+</head>
+<body>
+    <h1>إحصائيات زيارات حبيبة</h1>
+    <div id="stats"></div>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-database.js"></script>
+    
+    <script>
+        // نفس إعدادات Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyByTnOxAhiNYbytuZV4pJT5Kwm6LcsSMzg",
+            authDomain: "chatz-da38d.firebaseapp.com",
+            databaseURL: "https://chatz-da38d-default-rtdb.firebaseio.com",
+            projectId: "chatz-da38d",
+            storageBucket: "chatz-da38d.appspot.com",
+            messagingSenderId: "681805463840",
+            appId: "1:681805463840:web:2b90061ef8a9d7dd7a9745"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        
+        // عرض الإحصائيات
+        firebase.database().ref("visits").orderByChild("timestamp").on("value", snapshot => {
+            const visits = [];
+            snapshot.forEach(child => {
+                visits.push(child.val());
+            });
+            
+            // عرض الإحصائيات
+            const statsDiv = document.getElementById("stats");
+            const totalVisits = visits.length;
+            
+            let html = `
+                <h3>إجمالي الزيارات: ${totalVisits}</h3>
+                <table>
+                    <tr>
+                        <th>التاريخ والوقت</th>
+                        <th>الصفحة</th>
+                        <th>المتصفح</th>
+                    </tr>
+            `;
+            
+            visits.reverse().forEach(visit => {
+                const date = new Date(visit.timestamp);
+                const dateStr = date.toLocaleString('ar-EG');
+                
+                html += `
+                    <tr>
+                        <td>${dateStr}</td>
+                        <td>${visit.page}</td>
+                        <td>${visit.userAgent.substring(0, 50)}...</td>
+                    </tr>
+                `;
+            });
+            
+            html += '</table>';
+            statsDiv.innerHTML = html;
+        });
+    </script>
+</body>
+</html>
